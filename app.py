@@ -1,12 +1,13 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import CORS
 import json
 import os
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS to allow external requests
+
 DATA_FILE = "data.json"
 
-
-# Load stored data
 def load_data():
     if not os.path.exists(DATA_FILE):
         return []
@@ -16,16 +17,12 @@ def load_data():
     except json.JSONDecodeError:
         return []
 
-
-# Save data (append new entry)
 def save_data(data):
     received_data = load_data()
-    received_data.append(data)  # Append new data
+    received_data.append(data)
     with open(DATA_FILE, "w") as file:
         json.dump(received_data, file)
 
-
-# Receive data from Website 1
 @app.route('/receive', methods=['POST'])
 def receive_data():
     data = request.get_json()
@@ -34,8 +31,6 @@ def receive_data():
         return jsonify({"message": "Data received successfully!"}), 200
     return jsonify({"error": "Invalid data"}), 400
 
-
-# Display only the most recent received data
 @app.route('/display', methods=['GET'])
 def display_data():
     received_data = load_data()
@@ -43,18 +38,11 @@ def display_data():
     if not received_data:
         return "<h1>No data received yet.</h1>"
 
-    # Get the last received entry
     last_entry = received_data[-1]
-
     result = "<h1>Received Data</h1>"
     result += f"<p>Name: {last_entry.get('name', 'N/A')}, Email: {last_entry.get('email', 'N/A')}</p>"
 
     return result
 
-
-
-
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))  # Render provides PORT dynamically
-    app.run(host='0.0.0.0', port=port)
-
+    app.run(host='0.0.0.0', port=5000)
